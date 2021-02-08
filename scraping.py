@@ -24,7 +24,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": hemispheres(browser)
     }
     # Stop webdriver and return data
     browser.quit()
@@ -69,7 +70,7 @@ def featured_image(browser):
     browser.visit(url)
 
     # Find and click the full image button
-    full_image_elem = browser.find_by_tag('button')[1]
+    full_image_elem = browser.find(id="full_image")
     full_image_elem.click()
 
     # Parse the resulting html with soup
@@ -112,4 +113,51 @@ if __name__ == "__main__":
 
     # If running as script, print scraped data
     print(scrape_all())    
+
+def hemisphere_image_urls():
+    
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    browser.visit(url)
+
+    # 2. Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+
+    # First, get a list of all of the hemispheres
+    # First, get a list of all of the hemispheres
+    html = browser.html
+    mars_hemispheres = soup(html, 'html.parser')
+
+    mars_images = mars_hemispheres.find_all('div', class_='item')
+
+    # Next, loop through those links, click the link, find the sample anchor, return the href
+    for image in mars_images:
+        url = image.find("a")['href']
+        browser.visit(base_url+url)
+        
+        # parse the hemi page
+        hemi_item_html = browser.html
+        hemi_soup = soup(hemi_item_html, 'html.parser')
+        
+        # Get the title for Hemisphere
+        title = hemi_soup.find('h2', class_ = 'title').text
+        
+        # Get URL and Jpeg image
+        downloads = hemi_soup.find('div', class_ = 'downloads')
+        image_url = downloads.find('a')['href']
+
+        # Append hemisphere object to list
+        hemisphere_image_urls.append({"title": title, "img_url": image_url})
+        
+   
+
+# 4. Print the list that holds the dictionary of each image url and title.
+    return hemisphere_image_urls
+
+    
+
+
+
+
 
